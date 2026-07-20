@@ -1,0 +1,5 @@
+.DS_Store
+node_modules/
+
+# generated report — regenerate with: node test/comprehensive/run.js
+test/comprehensive/REPORT.md

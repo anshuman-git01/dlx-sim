@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DLX-Sim — DLX pipeline simulator</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <div class="brand">DLX<span>-Sim</span></div>
+    <div class="controls">
+      <button id="btnAssemble" class="primary" title="Assemble the source and reset the machine">Assemble</button>
+      <span class="sep"></span>
+      <button id="btnStep" title="Advance one clock cycle">Step</button>
+      <button id="btnStep10" title="Advance ten clock cycles">+10</button>
+      <button id="btnRun" title="Run continuously">Run</button>
+      <button id="btnFast" title="Run to completion instantly">Run&nbsp;to&nbsp;End</button>
+      <button id="btnReset" title="Reset registers, memory and pipeline">Reset</button>
+      <span class="sep"></span>
+      <label class="chk" title="EX/MEM and MEM/WB forwarding paths">
+        <input type="checkbox" id="chkFwd" checked /> Forwarding
+      </label>
+      <select id="speedSel" title="Run speed">
+        <option value="2">2 cyc/s</option>
+        <option value="10" selected>10 cyc/s</option>
+        <option value="60">60 cyc/s</option>
+        <option value="1000">turbo</option>
+      </select>
+    </div>
+    <div class="status">
+      <span id="stCycle">cycle 0</span>
+      <span id="stPC">PC 0x0000</span>
+      <span id="stState" class="state-ready">ready</span>
+    </div>
+  </header>
+
+  <div id="body">
+    <nav id="side">
+      <button data-view="code" class="active"><i>&gt;_</i>Code</button>
+      <button data-view="pipeline"><i>≡</i>Pipeline</button>
+      <button data-view="regmem"><i>#</i>REG&amp;MEM</button>
+      <button data-view="logs"><i>≣</i>Logs</button>
+      <button data-view="tests"><i>⚗</i>Tests</button>
+      <button data-view="perf"><i>⚡</i>Performance</button>
+      <button data-view="help"><i>?</i>Help</button>
+    </nav>
+
+    <main id="main">
+
+      <!-- ============================ CODE ============================ -->
+      <section id="view-code" class="view active">
+        <div id="explorer">
+          <div class="exp-head">
+            <span>EXPLORER</span>
+            <span class="exp-actions">
+              <button id="btnNewFile" title="New file">＋</button>
+              <button id="btnImport" title="Open .s files from disk">⇪</button>
+              <button id="btnExamplesMenu" title="Add an example program (UEC 610 P1–P20)">☰</button>
+            </span>
+          </div>
+          <div id="fileList"></div>
+          <div id="examplesMenu" class="hidden"></div>
+          <input type="file" id="fileInput" accept=".s,.asm,.dlx,.txt" multiple class="hidden" />
+        </div>
+        <div class="editor-wrap">
+          <div id="tabsBar"></div>
+          <div class="editor">
+            <div id="gutter"></div>
+            <div class="edit-area">
+              <pre id="hl" aria-hidden="true"></pre>
+              <textarea id="src" spellcheck="false" autocomplete="off" autocapitalize="off" wrap="off"></textarea>
+            </div>
+          </div>
+          <div id="terminal">
+            <div class="term-title">Terminal</div>
+            <pre id="termOut"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================== PIPELINE ========================== -->
+      <section id="view-pipeline" class="view">
+        <div class="view-head">
+          <h1>Pipeline</h1>
+          <div class="pipe-controls">
+            <label class="chk"><input type="checkbox" id="chkFollow" checked /> follow</label>
+            <input type="range" id="cycleWin" min="1" max="1" value="1" />
+            <span id="winLabel" class="dim"></span>
+          </div>
+        </div>
+        <div class="legend">
+          <span><b class="lg stIF"></b>IF</span><span><b class="lg stID"></b>ID</span>
+          <span><b class="lg stEX"></b>EX</span><span><b class="lg stMEM"></b>MEM</span>
+          <span><b class="lg stWB"></b>WB</span><span><b class="lg stSTALL"></b>STALL</span>
+          <span><b class="lg stFLUSH"></b>FLUSH</span>
+        </div>
+        <div id="pipeChart" class="pipe-chart"></div>
+      </section>
+
+      <!-- ========================== REG & MEM ========================= -->
+      <section id="view-regmem" class="view">
+        <div class="view-head"><h1>Registers &amp; Memory</h1></div>
+        <div class="regmem-cols">
+          <div class="panel">
+            <h2>Registers</h2>
+            <div id="regGrid" class="reg-grid"></div>
+          </div>
+          <div class="panel">
+            <h2>Memory</h2>
+            <div class="mem-controls">
+              <label>addr <input id="memAddr" value="0x1000" size="8" /></label>
+              <select id="symSel"></select>
+              <button id="btnMemGo">go</button>
+            </div>
+            <pre id="memDump" class="mem-dump"></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ LOGS ============================ -->
+      <section id="view-logs" class="view">
+        <div class="view-head">
+          <h1>Logs</h1>
+          <select id="logFilter">
+            <option value="">all events</option>
+            <option value="stall">stalls</option>
+            <option value="forward">forwards</option>
+            <option value="branch">branches</option>
+            <option value="flush">flushes</option>
+            <option value="mem">memory</option>
+            <option value="trap">traps</option>
+            <option value="error">errors</option>
+          </select>
+        </div>
+        <div id="logList" class="log-list"></div>
+      </section>
+
+      <!-- ============================ TESTS =========================== -->
+      <section id="view-tests" class="view">
+        <div class="view-head">
+          <h1>Tests</h1>
+          <button id="btnRunTests" class="primary">Run current file</button>
+          <button id="btnRunAllTests">Run all workspace files</button>
+          <span id="testSummary" class="dim"></span>
+        </div>
+        <p class="dim" style="margin-bottom:12px">
+          Declare expected results as comments in any program, then run them here:
+          <code style="font-family:var(--mono)">; @expect word result = 55</code> ·
+          <code style="font-family:var(--mono)">; @expect reg R2 = 10</code> ·
+          <code style="font-family:var(--mono)">; @expect string buf = "ABC"</code> ·
+          <code style="font-family:var(--mono)">; @expect output "55"</code>
+        </p>
+        <div id="testList" class="test-list"></div>
+      </section>
+
+      <!-- ========================= PERFORMANCE ======================== -->
+      <section id="view-perf" class="view">
+        <div class="view-head">
+          <h1>Performance</h1>
+          <button id="btnCompare" class="primary">Compare forwarding on / off</button>
+        </div>
+        <div id="perfCards" class="perf-cards"></div>
+        <div id="perfCompare"></div>
+      </section>
+
+      <!-- ============================ HELP ============================ -->
+      <section id="view-help" class="view">
+        <div class="view-head"><h1>Help</h1></div>
+        <div class="help-body" id="helpBody"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+  // Cache-bust every load: browsers can pin these files in the HTTP cache
+  // across reloads even after they change on disk. Appending a per-load
+  // timestamp query guarantees a fresh fetch every time the page opens.
+  var __v = Date.now();
+  document.write('<script src="dlx.js?v=' + __v + '"><\/script>');
+  document.write('<script src="examples.js?v=' + __v + '"><\/script>');
+  document.write('<script src="app.js?v=' + __v + '"><\/script>');
+</script>
+</body>
+</html>
