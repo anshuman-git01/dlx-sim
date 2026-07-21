@@ -759,6 +759,43 @@ program to completion and verifies them:</p>
     refreshPerf();
   }
 
+  /* ===================== AI panel bridge ======================== */
+  // Small, decoupled API the AI chat panel (ai.js) talks to, so the chat
+  // logic never reaches into the editor internals directly.
+  let aiUndoSnapshot = null;
+  window.DLXIDE = {
+    activeName: () => ws.active,
+    getSource: () => srcEl.value,
+    // Fresh assembler errors for the current buffer: [{line, msg}]
+    getErrors: () => {
+      const p = DLX.assemble(srcEl.value);
+      return p.ok ? [] : p.errors.slice();
+    },
+    // Replace the active file's content (used by "Apply to editor").
+    setSource: (text) => {
+      aiUndoSnapshot = srcEl.value;
+      srcEl.value = text;
+      ws.files[ws.active] = text;
+      asmDirty = true;
+      wsSave();
+      refreshEditor();
+      term('AI: applied changes to ' + ws.active + ' (Undo available in the chat panel)', 't-info');
+    },
+    canUndo: () => aiUndoSnapshot !== null,
+    undo: () => {
+      if (aiUndoSnapshot === null) return false;
+      const prev = aiUndoSnapshot;
+      aiUndoSnapshot = null;
+      srcEl.value = prev;
+      ws.files[ws.active] = prev;
+      asmDirty = true;
+      wsSave();
+      refreshEditor();
+      term('AI: reverted the last applied change', 't-info');
+      return true;
+    },
+  };
+
   /* ============================ boot ============================= */
   wsLoad();
   refreshExplorer();

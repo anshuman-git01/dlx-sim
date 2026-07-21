@@ -4,7 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>DLX-Sim — DLX pipeline simulator</title>
-<link rel="stylesheet" href="style.css" />
+<script>
+  // Cache-bust the stylesheet too (same reason as the scripts below): a plain
+  // <link href="style.css"> can be pinned in the HTTP cache across edits.
+  document.write('<link rel="stylesheet" href="style.css?v=' + Date.now() + '">');
+</script>
 </head>
 <body>
 <div id="app">
@@ -29,6 +33,8 @@
         <option value="60">60 cyc/s</option>
         <option value="1000">turbo</option>
       </select>
+      <span class="sep"></span>
+      <button id="btnAI" title="Toggle the AI assistant panel">✦&nbsp;AI</button>
     </div>
     <div class="status">
       <span id="stCycle">cycle 0</span>
@@ -173,6 +179,51 @@
       </section>
 
     </main>
+
+    <!-- ============================= AI CHAT ========================= -->
+    <aside id="aichat">
+      <div class="ai-head">
+        <span class="ai-title">✦ AI Assistant</span>
+        <span class="ai-head-actions">
+          <button id="aiGear" title="Settings (provider &amp; API key)">⚙</button>
+          <button id="aiClose" title="Close panel">✕</button>
+        </span>
+      </div>
+
+      <div id="aiSettings" class="ai-settings hidden">
+        <label>Provider
+          <select id="aiProvider"></select>
+        </label>
+        <label>Model
+          <select id="aiModel"></select>
+        </label>
+        <label>API key
+          <input id="aiKey" type="password" autocomplete="off" spellcheck="false" />
+        </label>
+        <div id="aiKeyHint" class="ai-dim"></div>
+        <div class="ai-dim ai-note">Stored only in this browser (localStorage). The browser calls the
+          provider directly — nothing is sent to any DLX-Sim server.</div>
+      </div>
+
+      <div id="aiMessages" class="ai-messages">
+        <div class="ai-welcome">
+          <p>Ask me to <b>write</b>, <b>explain</b>, <b>fix</b>, or <b>optimize</b> DLX programs.
+             Answers come with <b>Apply&nbsp;to&nbsp;editor</b> buttons.</p>
+        </div>
+      </div>
+
+      <div id="aiNokey" class="ai-nokey hidden">
+        Add a free <b>Google Gemini</b> key in ⚙ settings to start —
+        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">get one here</a>.
+      </div>
+
+      <div id="aiQuick" class="ai-quick"></div>
+
+      <div class="ai-input-row">
+        <textarea id="aiInput" rows="2" placeholder="Ask about your DLX code…  (Enter to send, Shift+Enter for newline)"></textarea>
+        <button id="aiSend">Send</button>
+      </div>
+    </aside>
   </div>
 </div>
 
@@ -184,6 +235,7 @@
   document.write('<script src="dlx.js?v=' + __v + '"><\/script>');
   document.write('<script src="examples.js?v=' + __v + '"><\/script>');
   document.write('<script src="app.js?v=' + __v + '"><\/script>');
+  document.write('<script src="ai.js?v=' + __v + '"><\/script>');
 </script>
 </body>
 </html>
