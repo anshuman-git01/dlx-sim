@@ -13,8 +13,23 @@
 
   /* ========================== workspace ========================== */
   const WS_KEY = 'dlxsim.ws.v1';
-  const STARTER = `        .text
-main:   TRAP 0
+  const STARTER = `; A simple DLX ALU demo — basic arithmetic & logic on two registers.
+; Press Assemble, then Step through it, or open the Pipeline tab.
+; The @expect lines below are checked in the Tests tab.
+
+; @expect reg R3 = 17
+; @expect reg R8 = 384
+
+        .text
+main:   ADDI R1, R0, 12        ; R1 = 12
+        ADDI R2, R0, 5         ; R2 = 5
+        ADD  R3, R1, R2        ; 12 + 5  = 17
+        SUB  R4, R1, R2        ; 12 - 5  = 7
+        AND  R5, R1, R2        ; 12 & 5  = 4
+        OR   R6, R1, R2        ; 12 | 5  = 13
+        XOR  R7, R1, R2        ; 12 ^ 5  = 9
+        SLL  R8, R1, R2        ; 12 << 5 = 384
+        TRAP 0
 `;
 
   let ws = null;
@@ -685,7 +700,7 @@ The register file is written in the first half of WB and read in the second half
 <ul>
 <li>Files live in your browser (localStorage). Create (＋), import from disk (⇪), download with <code>Ctrl/Cmd+S</code>.</li>
 <li>Double-click a file to rename it; ✕ deletes it.</li>
-<li>The ☰ menu adds the UEC 610 example projects (P1–P20) as ordinary editable files.</li>
+<li>The ☰ menu adds 30 example projects (P1–P30) as ordinary editable files.</li>
 <li>Click a line number to toggle a <b>breakpoint</b>; Run pauses when that line reaches the ID stage. The highlighted line is the instruction currently in ID.</li>
 </ul>
 
@@ -749,6 +764,6 @@ program to completion and verifies them:</p>
   refreshExplorer();
   srcEl.value = ws.files[ws.active];
   refreshEditor();
-  term('workspace loaded — ' + Object.keys(ws.files).length + ' file(s). Add the UEC 610 projects from the ☰ menu.', 't-info');
+  term('workspace loaded — ' + Object.keys(ws.files).length + ' file(s). Add example programs from the ☰ menu.', 't-info');
   assemble();
 })();

@@ -1,5 +1,6 @@
 /* ============================================================
- * DLX-Sim — the 20 micro-projects of UEC 610 as runnable examples.
+ * DLX-Sim — 30 micro-projects (the 20 UEC 610 assignments plus 10
+ * classic algorithms) as runnable examples, shown in a shuffled order.
  * Each example carries `checks` so it can be verified automatically
  * (Tests tab in the UI, or `node test/run-tests.js`).
  * Conventions: TRAP 0 halt · TRAP 1 print int R1 · TRAP 2 print
@@ -763,7 +764,385 @@ full:   ADDI R1, R0, str
       { kind: 'out', includes: 'DLX!' },
     ],
   },
+
+  /* ----------------------------------------------------------- P21 */
+  {
+    id: 'P21', name: 'P21 — factorial (iterative)',
+    brief: 'Multiplies n down to 1 in a counted loop: 5! = 120. Watch the MULT feed straight back into itself via forwarding.',
+    code: `; P21: factorial (iterative)  5! = 120
+        .data
+n:      .word 5
+result: .word 0
+        .text
+main:   LW   R1, n(R0)
+        ADDI R2, R0, 1
+loop:   BEQZ R1, done
+        MULT R2, R2, R1
+        SUBI R1, R1, 1
+        J    loop
+done:   SW   result(R0), R2
+        ADD  R1, R0, R2
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 120 },
+      { kind: 'out', includes: '120' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P22 */
+  {
+    id: 'P22', name: 'P22 — GCD (Euclidean algorithm)',
+    brief: 'Repeated remainder (a mod b via DIV/MULT/SUB) until b hits zero: gcd(48, 18) = 6.',
+    code: `; P22: greatest common divisor via Euclid's algorithm  gcd(48,18)=6
+        .data
+a:      .word 48
+b:      .word 18
+result: .word 0
+        .text
+main:   LW   R1, a(R0)
+        LW   R2, b(R0)
+loop:   BEQZ R2, done           ; while (b != 0)
+        DIV  R3, R1, R2
+        MULT R3, R3, R2
+        SUB  R4, R1, R3         ; r = a - (a/b)*b = a mod b
+        ADD  R1, R2, R0         ; a = b
+        ADD  R2, R4, R0         ; b = r
+        J    loop
+done:   SW   result(R0), R1
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 6 },
+      { kind: 'out', includes: '6' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P23 */
+  {
+    id: 'P23', name: 'P23 — linear search',
+    brief: 'Scans a word array for a target, returning its index (or -1). Here 16 is found at index 3.',
+    code: `; P23: linear search — return the index of the target (=> 3)
+        .data
+arr:    .word 4, 8, 15, 16, 23, 42
+n:      .word 6
+target: .word 16
+result: .word 0
+        .text
+main:   LW   R1, n(R0)
+        LW   R2, target(R0)
+        ADDI R3, R0, arr
+        ADDI R4, R0, 0          ; index
+loop:   BEQZ R1, notfound
+        LW   R5, 0(R3)
+        SEQ  R6, R5, R2
+        BNEZ R6, found
+        ADDI R3, R3, 4
+        ADDI R4, R4, 1
+        SUBI R1, R1, 1
+        J    loop
+notfound: ADDI R4, R0, -1
+found:  SW   result(R0), R4
+        ADD  R1, R0, R4
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 3 },
+      { kind: 'out', includes: '3' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P24 */
+  {
+    id: 'P24', name: 'P24 — binary search',
+    brief: 'Halves the search window each step on a sorted array: 42 is located at index 5 in far fewer comparisons than a linear scan.',
+    code: `; P24: binary search over a sorted array — index of 42 (=> 5)
+        .data
+arr:    .word 2, 4, 8, 16, 23, 42, 50, 71
+n:      .word 8
+target: .word 42
+result: .word 0
+        .text
+main:   LW   R1, target(R0)
+        ADDI R2, R0, 0          ; lo
+        LW   R3, n(R0)
+        SUBI R3, R3, 1          ; hi
+        ADDI R7, R0, -1         ; result
+loop:   SGT  R8, R2, R3         ; while (lo <= hi)
+        BNEZ R8, done
+        ADD  R4, R2, R3
+        SRLI R4, R4, 1          ; mid = (lo+hi)/2
+        SLLI R5, R4, 2
+        ADDI R6, R0, arr
+        ADD  R6, R6, R5
+        LW   R9, 0(R6)          ; arr[mid]
+        SEQ  R10, R9, R1
+        BNEZ R10, foundmid
+        SLT  R10, R9, R1
+        BEQZ R10, goleft
+        ADDI R2, R4, 1          ; arr[mid] < target -> lo = mid+1
+        J    loop
+goleft: SUBI R3, R4, 1          ; arr[mid] > target -> hi = mid-1
+        J    loop
+foundmid: ADD R7, R4, R0
+done:   SW   result(R0), R7
+        ADD  R1, R0, R7
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 5 },
+      { kind: 'out', includes: '5' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P25 */
+  {
+    id: 'P25', name: 'P25 — selection sort',
+    brief: 'Repeatedly selects the minimum of the unsorted tail and swaps it into place. Sorts {29,10,14,37,13} ascending.',
+    code: `; P25: selection sort (ascending)
+        .data
+arr:    .word 29, 10, 14, 37, 13
+n:      .word 5
+        .text
+main:   LW   R1, n(R0)
+        ADDI R2, R0, 0          ; i
+outer:  SUBI R7, R1, 1
+        SGE  R7, R2, R7         ; i >= n-1 ?
+        BNEZ R7, done
+        ADD  R3, R2, R0         ; minIdx = i
+        ADDI R4, R2, 1          ; j = i+1
+inner:  SGE  R7, R4, R1
+        BNEZ R7, swap
+        SLLI R8, R4, 2
+        ADDI R9, R0, arr
+        ADD  R9, R9, R8
+        LW   R10, 0(R9)         ; arr[j]
+        SLLI R8, R3, 2
+        ADDI R9, R0, arr
+        ADD  R9, R9, R8
+        LW   R11, 0(R9)         ; arr[minIdx]
+        SLT  R7, R10, R11
+        BEQZ R7, skip
+        ADD  R3, R4, R0         ; minIdx = j
+skip:   ADDI R4, R4, 1
+        J    inner
+swap:   SLLI R8, R2, 2
+        ADDI R9, R0, arr
+        ADD  R9, R9, R8
+        LW   R10, 0(R9)         ; arr[i]
+        SLLI R8, R3, 2
+        ADDI R12, R0, arr
+        ADD  R12, R12, R8
+        LW   R11, 0(R12)        ; arr[minIdx]
+        SW   0(R9), R11
+        SW   0(R12), R10
+        ADDI R2, R2, 1
+        J    outer
+done:   TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'arr', index: 0, value: 10 },
+      { kind: 'memw', label: 'arr', index: 1, value: 13 },
+      { kind: 'memw', label: 'arr', index: 2, value: 14 },
+      { kind: 'memw', label: 'arr', index: 3, value: 29 },
+      { kind: 'memw', label: 'arr', index: 4, value: 37 },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P26 */
+  {
+    id: 'P26', name: 'P26 — count primes up to N',
+    brief: 'Trial-division primality test inside a counting loop: there are 8 primes in 2..20 (2,3,5,7,11,13,17,19).',
+    code: `; P26: count how many primes are in the range 2..20 (=> 8)
+        .data
+limit:  .word 20
+result: .word 0
+        .text
+main:   LW   R10, limit(R0)
+        ADDI R1, R0, 2          ; candidate
+        ADDI R11, R0, 0         ; prime count
+outer:  SGT  R2, R1, R10
+        BNEZ R2, done
+        ADDI R3, R0, 2          ; divisor
+        ADDI R12, R0, 1         ; assume prime
+chk:    MULT R4, R3, R3
+        SGT  R5, R4, R1         ; divisor*divisor > candidate ?
+        BNEZ R5, tally
+        DIV  R6, R1, R3
+        MULT R6, R6, R3
+        SEQ  R7, R6, R1         ; divides evenly ?
+        BEQZ R7, nextd
+        ADDI R12, R0, 0         ; not prime
+        J    tally
+nextd:  ADDI R3, R3, 1
+        J    chk
+tally:  ADD  R11, R11, R12
+        ADDI R1, R1, 1
+        J    outer
+done:   SW   result(R0), R11
+        ADD  R1, R0, R11
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 8 },
+      { kind: 'out', includes: '8' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P27 */
+  {
+    id: 'P27', name: 'P27 — palindrome check',
+    brief: 'Two pointers walk inward from both ends of a string; "RACECAR" reads the same both ways, so the result is 1.',
+    code: `; P27: is the string a palindrome?  ("RACECAR" => 1)
+        .data
+s:      .asciiz "RACECAR"
+result: .word 0
+        .text
+main:   ADDI R1, R0, s          ; left
+        ADD  R2, R1, R0
+len:    LBU  R3, 0(R2)          ; find the terminator
+        BEQZ R3, gotlen
+        ADDI R2, R2, 1
+        J    len
+gotlen: SUBI R2, R2, 1          ; right = last char
+        ADDI R4, R0, 1          ; assume palindrome
+cmp:    SGE  R5, R1, R2         ; pointers crossed ?
+        BNEZ R5, done
+        LBU  R6, 0(R1)
+        LBU  R7, 0(R2)
+        SEQ  R8, R6, R7
+        BNEZ R8, cont
+        ADDI R4, R0, 0          ; mismatch -> not a palindrome
+        J    done
+cont:   ADDI R1, R1, 1
+        SUBI R2, R2, 1
+        J    cmp
+done:   SW   result(R0), R4
+        ADD  R1, R0, R4
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 1 },
+      { kind: 'out', includes: '1' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P28 */
+  {
+    id: 'P28', name: 'P28 — reverse an array in place',
+    brief: 'Swaps elements from both ends toward the middle with no extra buffer: {1,2,3,4,5} becomes {5,4,3,2,1}.',
+    code: `; P28: reverse a word array in place
+        .data
+arr:    .word 1, 2, 3, 4, 5
+n:      .word 5
+        .text
+main:   ADDI R1, R0, arr        ; left pointer
+        LW   R2, n(R0)
+        SUBI R2, R2, 1
+        SLLI R2, R2, 2
+        ADD  R2, R1, R2         ; right = &arr[n-1]
+loop:   SGE  R5, R1, R2         ; pointers met/crossed ?
+        BNEZ R5, done
+        LW   R3, 0(R1)
+        LW   R4, 0(R2)
+        SW   0(R1), R4
+        SW   0(R2), R3
+        ADDI R1, R1, 4
+        SUBI R2, R2, 4
+        J    loop
+done:   TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'arr', index: 0, value: 5 },
+      { kind: 'memw', label: 'arr', index: 1, value: 4 },
+      { kind: 'memw', label: 'arr', index: 2, value: 3 },
+      { kind: 'memw', label: 'arr', index: 3, value: 2 },
+      { kind: 'memw', label: 'arr', index: 4, value: 1 },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P29 */
+  {
+    id: 'P29', name: 'P29 — sum of decimal digits',
+    brief: 'Peels off digits with divide-by-10 and remainder: the digits of 12345 sum to 15.',
+    code: `; P29: sum of the decimal digits of a number  (12345 => 15)
+        .data
+num:    .word 12345
+result: .word 0
+        .text
+main:   LW   R1, num(R0)
+        ADDI R2, R0, 0          ; sum
+        ADDI R3, R0, 10
+loop:   BEQZ R1, done
+        DIV  R4, R1, R3         ; n / 10
+        MULT R5, R4, R3
+        SUB  R6, R1, R5         ; digit = n - (n/10)*10
+        ADD  R2, R2, R6
+        ADD  R1, R4, R0         ; n = n / 10
+        J    loop
+done:   SW   result(R0), R2
+        ADD  R1, R0, R2
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 15 },
+      { kind: 'out', includes: '15' },
+    ],
+  },
+
+  /* ----------------------------------------------------------- P30 */
+  {
+    id: 'P30', name: 'P30 — integer power (x^n)',
+    brief: 'Repeated multiplication computes 3^5 = 243. A tight MULT-dependent loop — a good forwarding-on/off comparison.',
+    code: `; P30: integer exponentiation  base^exp  (3^5 = 243)
+        .data
+base:   .word 3
+exp:    .word 5
+result: .word 0
+        .text
+main:   LW   R1, base(R0)
+        LW   R2, exp(R0)
+        ADDI R3, R0, 1          ; acc = 1
+loop:   BEQZ R2, done
+        MULT R3, R3, R1         ; acc *= base
+        SUBI R2, R2, 1
+        J    loop
+done:   SW   result(R0), R3
+        ADD  R1, R0, R3
+        TRAP 1
+        TRAP 0
+`,
+    checks: [
+      { kind: 'memw', label: 'result', value: 243 },
+      { kind: 'out', includes: '243' },
+    ],
+  },
   ];
+
+  /* Present the examples in a fixed, non-sequential order so the menu
+   * reads as a varied collection rather than a rigid P1..P30 list. The
+   * shuffle is deterministic (fixed seed) so the order is stable across
+   * loads, and it is order-independent for the test harness. */
+  (function shuffle(a) {
+    let seed = 0x9e3779b9 >>> 0;
+    const rnd = () => {
+      seed ^= seed << 13; seed >>>= 0;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;  seed >>>= 0;
+      return seed / 4294967296;
+    };
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+  })(EXAMPLES);
 
   root.DLX_EXAMPLES = EXAMPLES;
   if (typeof module !== 'undefined' && module.exports) module.exports = EXAMPLES;

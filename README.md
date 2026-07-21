@@ -25,7 +25,7 @@ ADD  R4, R3, R1                    IF → ⏸ → ID → EX → …  ← load-us
 |  **Registers & memory** | Live register file and hex memory dump with symbol navigation |
 |  **Self-checking programs** | Declare expected results as `; @expect` comments — the Tests tab verifies them |
 |  **Performance analysis** | Cycles, CPI, stall breakdown, and a one-click forwarding on/off comparison |
-|  **20 example programs** | Classic assignments (string ops, matrix multiply, recursive Fibonacci, bubble sort, BCD…) ready to load |
+|  **30 example programs** | Classic assignments (string ops, matrix multiply, recursive Fibonacci, bubble/selection sort, binary search, GCD, primes, BCD…) ready to load |
 
 ##  Quick start
 
@@ -41,7 +41,7 @@ You'll land in `welcome.s`, a small self-checking program. Press **Assemble**, t
 
 ##  Using the IDE
 
-- **＋** new file · **⇪** import `.s` files from disk · **☰** add an example program (P1–P20)
+- **＋** new file · **⇪** import `.s` files from disk · **☰** add an example program (P1–P30)
 - Double-click a file to **rename**, ✕ to delete, `Ctrl/Cmd+S` to **download** the active file
 - Click a **line number** to toggle a breakpoint; the highlighted line is the instruction currently in decode
 - **Step / +10** single-step the clock · **Run** animates at the chosen speed · **Run to End** finishes instantly
@@ -132,9 +132,9 @@ dlx-simulator/
 ├── app.js                # IDE: workspace, editor, views
 ├── dlx.js                # assembler + pipeline engine + @expect parser
 │                         #   (plain JS — also loads in Node, no dependencies)
-├── examples.js           # 20 classic example programs with checks
+├── examples.js           # 30 classic example programs with checks (shuffled)
 └── test/
-    ├── run-tests.js      # Node harness for the 20 examples
+    ├── run-tests.js      # Node harness for the 30 examples
     └── comprehensive/
         ├── spec.js       # ~130 tests: assembler, every instruction, memory,
         │                 #   pipeline/hazards, control flow, algorithms,
@@ -148,7 +148,7 @@ dlx-simulator/
 ##  Testing
 
 ```bash
-node test/run-tests.js               # 20 examples × 2 forwarding modes = 44 checks
+node test/run-tests.js               # 30 examples × 2 forwarding modes + micro-tests
 node test/comprehensive/run.js       # ~130 tests across every category below
 ```
 
