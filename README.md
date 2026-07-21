@@ -13,21 +13,21 @@ ADD  R4, R3, R1                    IF → ⏸ → ID → EX → …  ← load-us
 
 ---
 
-## ✨ Features
+##  Features
 
 | | |
 |---|---|
-| 📝 **IDE workspace** | File explorer, editor tabs, DLX syntax highlighting, terminal — your files persist in the browser |
-| 🔴 **Breakpoints** | Click a line number, press Run, and the machine pauses when that instruction is decoded |
-| 📊 **Pipeline diagram** | Live per-cycle chart of IF / ID / EX / MEM / WB, with STALL and FLUSH bubbles |
-| 🔀 **Forwarding toggle** | Flip EX/MEM & MEM/WB forwarding on/off and watch the CPI change |
+|  **IDE workspace** | File explorer, editor tabs, DLX syntax highlighting, terminal — your files persist in the browser |
+|  **Breakpoints** | Click a line number, press Run, and the machine pauses when that instruction is decoded |
+|  **Pipeline diagram** | Live per-cycle chart of IF / ID / EX / MEM / WB, with STALL and FLUSH bubbles |
+|  **Forwarding toggle** | Flip EX/MEM & MEM/WB forwarding on/off and watch the CPI change |
 | 🔍 **Hazard logs** | Every stall names its cause and the instruction that blocked it |
-| 🧮 **Registers & memory** | Live register file and hex memory dump with symbol navigation |
-| ✅ **Self-checking programs** | Declare expected results as `; @expect` comments — the Tests tab verifies them |
-| ⚡ **Performance analysis** | Cycles, CPI, stall breakdown, and a one-click forwarding on/off comparison |
-| 📚 **20 example programs** | Classic assignments (string ops, matrix multiply, recursive Fibonacci, bubble sort, BCD…) ready to load |
+|  **Registers & memory** | Live register file and hex memory dump with symbol navigation |
+|  **Self-checking programs** | Declare expected results as `; @expect` comments — the Tests tab verifies them |
+|  **Performance analysis** | Cycles, CPI, stall breakdown, and a one-click forwarding on/off comparison |
+|  **20 example programs** | Classic assignments (string ops, matrix multiply, recursive Fibonacci, bubble sort, BCD…) ready to load |
 
-## 🚀 Quick start
+##  Quick start
 
 ```bash
 git clone <this-repo>
@@ -39,7 +39,7 @@ Open **http://localhost:8734** — that's it. (Any static file server works; you
 
 You'll land in `welcome.s`, a small self-checking program. Press **Assemble**, then **Step** a few times and open the **Pipeline** tab.
 
-## 🕹️ Using the IDE
+##  Using the IDE
 
 - **＋** new file · **⇪** import `.s` files from disk · **☰** add an example program (P1–P20)
 - Double-click a file to **rename**, ✕ to delete, `Ctrl/Cmd+S` to **download** the active file
@@ -47,7 +47,7 @@ You'll land in `welcome.s`, a small self-checking program. Press **Assemble**, t
 - **Step / +10** single-step the clock · **Run** animates at the chosen speed · **Run to End** finishes instantly
 - The **Forwarding** checkbox rebuilds the datapath with or without forwarding paths
 
-## ✅ Self-checking programs
+##  Self-checking programs
 
 Add expectations as plain comments anywhere in a program, then open the **Tests** tab:
 
@@ -104,7 +104,7 @@ loop:   ADD  R2, R2, R1         ; sum += n
 | `TRAP 3` | print R1 as a single character |
 | `TRAP 4` | print R1 as hexadecimal |
 
-## 🏗️ The pipeline model
+##  The pipeline model
 
 Classic Hennessy & Patterson DLX:
 
@@ -145,7 +145,7 @@ dlx-simulator/
                            #   forwards, cycle counts for every test
 ```
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 node test/run-tests.js               # 20 examples × 2 forwarding modes = 44 checks
