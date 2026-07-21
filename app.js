@@ -13,37 +13,15 @@
 
   /* ========================== workspace ========================== */
   const WS_KEY = 'dlxsim.ws.v1';
-  const WELCOME = `; welcome.s — quick tour of DLX-Sim
-; Write any DLX program here, or add the UEC 610 example projects
-; from the ☰ menu in the Explorer (they are ordinary files you can edit).
-;
-; Click a line number to set a breakpoint, then press Run.
-; Declare expected results with @expect comments and check them in the Tests tab.
-
-; @expect word result = 55
-; @expect reg R2 = 55
-; @expect output "55"
-
-        .data
-result: .word 0
-
-        .text
-main:   ADDI R1, R0, 10         ; n = 10
-        ADDI R2, R0, 0          ; sum = 0
-loop:   ADD  R2, R2, R1         ; sum += n
-        SUBI R1, R1, 1
-        BNEZ R1, loop
-        SW   result(R0), R2
-        ADD  R1, R0, R2
-        TRAP 1                  ; print the sum
-        TRAP 0
+  const STARTER = `        .text
+main:   TRAP 0
 `;
 
   let ws = null;
   function wsLoad() {
     try { ws = JSON.parse(localStorage.getItem(WS_KEY)); } catch (e) { ws = null; }
     if (!ws || !ws.files || !Object.keys(ws.files).length) {
-      ws = { files: { 'welcome.s': WELCOME }, open: ['welcome.s'], active: 'welcome.s', bps: {} };
+      ws = { files: { 'main.s': STARTER }, open: ['main.s'], active: 'main.s', bps: {} };
     }
     if (!ws.bps) ws.bps = {};
     if (!ws.open.length || !ws.files[ws.active]) {
