@@ -86,8 +86,17 @@
       '',
       'When you provide DLX code, ALWAYS put it in a fenced ```dlx code block so the user can',
       'apply it with one click. Give a complete, runnable program (with .text, a main label,',
-      'and TRAP 0) unless the user explicitly asks for only a snippet. Keep explanations concise',
-      'and focused on what the student needs. Use plain text — no LaTeX.',
+      'and TRAP 0) unless the user explicitly asks for only a snippet.',
+      '',
+      'BE CONCISE — this matters:',
+      '• Write the shortest correct program for the task. No extra helper subroutines, no',
+      '  alternate implementations, no defensive checks for cases that cannot occur.',
+      '• Comment sparingly: at most one short comment per logical step, never one per line.',
+      "  Don't restate what an instruction obviously does (no '; add R1 and R2' next to ADD R1,R1,R2).",
+      '• Do not repeat the program in prose — say what it does in 1-2 sentences, then show it',
+      '  once in the code block. No line-by-line walkthrough unless the user asks to have it explained.',
+      '• Give ONE version. Do not offer multiple variants or "alternative approaches" unless asked.',
+      '• Use plain text — no LaTeX, no headers, no bullet-point essays for simple requests.',
     ].join('\n');
   }
 
